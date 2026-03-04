@@ -1,0 +1,21 @@
+.hero-section {
+  width: 100%;
+  position: relative;
+  margin-top: 0;
+}
+
+.hero-background {
+  width: 100%;
+  height: 120vh;
+  min-height: 600px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@media (max-width: 768px) {
+  .hero-background {
+    height: 120vh;
+    min-height: 500px;
+  }
+}

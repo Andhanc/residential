@@ -1,0 +1,73 @@
+.building9-page {
+  min-height: calc(100vh - 200px);
+  background-color: #f5f0ff;
+  padding-top: 80px;
+}
+
+.building9-image-section {
+  width: 100%;
+  max-width: 1920px;
+  height: auto;
+  min-height: 400px;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.building9-image {
+  width: 100%;
+  height: auto;
+  max-width: 1920px;
+  display: block;
+  margin: 0 auto;
+  padding: 0;
+  object-fit: contain;
+}
+
+.building9-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 1920px) {
+  .building9-image-section {
+    width: 100%;
+  }
+  
+  .building9-image {
+    width: 100%;
+    height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .building9-page {
+    padding-top: 60px;
+  }
+  
+  .building9-image-section {
+    min-height: 300px;
+  }
+  
+  .building9-content {
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .building9-page {
+    padding-top: 50px;
+  }
+  
+  .building9-image-section {
+    min-height: 250px;
+  }
+  
+  .building9-content {
+    padding: 1.5rem 1rem;
+  }
+}
