@@ -1,0 +1,99 @@
+/// Prisma schema for the residential project database
+/// Tables: Пользователь, Дом, Этаж, Квартира, Запрос на покупку
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Статус дома: сдан / не сдан
+enum HouseStatus {
+  NOT_COMPLETED
+  COMPLETED
+}
+
+/// Статус сделки по запросу на покупку
+enum DealStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+/// Пользователь
+model User {
+  id               Int               @id @default(autoincrement())
+  fullName         String
+  phone            String
+  email            String            @unique
+  passwordHash     String
+
+  purchaseRequests PurchaseRequest[]
+
+  createdAt        DateTime          @default(now())
+}
+
+/// Дом
+model House {
+  id          Int      @id @default(autoincrement())
+  name        String   // Номер/имя дома
+  address     String
+  floorsCount Int
+  status      HouseStatus
+  background  String?  // фон дома (картинка / url)
+
+  floors      Floor[]
+
+  createdAt   DateTime @default(now())
+}
+
+/// Этаж
+model Floor {
+  id        Int      @id @default(autoincrement())
+  houseId   Int
+  number    Int      // Номер этажа
+  planImage String?  // план этажа
+  layer     Int?     // слой этажа (для отрисовки)
+
+  house     House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  apartments Apartment[]
+
+  @@index([houseId])
+}
+
+/// Квартира
+model Apartment {
+  id             Int      @id @default(autoincrement())
+  floorId        Int
+  number         String   // Номер квартиры
+  rooms          Int      // Кол-во комнат
+  area           Decimal  @db.Decimal(10, 2) // Площадь
+  price          Decimal  @db.Decimal(12, 2) // Цена
+  isCommissioned Boolean  // статус (сдан / не сдан)
+  article        String?  // Артикул
+  planImage      String?  // план квартиры
+
+  floor          Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  purchaseRequests PurchaseRequest[]
+
+  @@index([floorId])
+}
+
+/// Запрос на покупку
+model PurchaseRequest {
+  id           Int        @id @default(autoincrement())
+  userId       Int
+  apartmentId  Int
+  requestDate  DateTime   @default(now())
+  status       DealStatus
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apartment    Apartment  @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([apartmentId])
+}
+

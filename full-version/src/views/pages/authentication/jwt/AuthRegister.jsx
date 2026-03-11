@@ -101,25 +101,22 @@ export default function JWTRegister({ ...others }) {
           try {
             const trimmedEmail = values.email.trim();
             await register?.(trimmedEmail, values.password, values.firstName, values.lastName);
-            if (scriptedRef.current) {
-              setStatus({ success: true });
-              setSubmitting(false);
-              dispatch(
-                openSnackbar({
-                  open: true,
-                  message: 'Your registration has been successfully completed.',
-                  variant: 'alert',
-                  alert: {
-                    color: 'success'
-                  },
-                  close: false
-                })
-              );
+            setStatus({ success: true });
+            setSubmitting(false);
+            dispatch(
+              openSnackbar({
+                open: true,
+                message: 'Your registration has been successfully completed.',
+                variant: 'alert',
+                alert: {
+                  color: 'success'
+                },
+                close: false
+              })
+            );
 
-              setTimeout(() => {
-                router.replace(authParam ? `/login?auth=${authParam}` : '/login');
-              }, 1500);
-            }
+            // Делаем редирект всегда после успешной регистрации
+            router.replace(authParam ? `/login?auth=${authParam}` : '/login');
           } catch (err) {
             if (scriptedRef.current) {
               setStatus({ success: false });

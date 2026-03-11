@@ -6,7 +6,8 @@
 
 import axios from 'axios';
 
-const axiosServices = axios.create({ baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/' });
+// Если NEXT_PUBLIC_API_URL не задан, используем тот же origin (Next.js API /api/*)
+const axiosServices = axios.create({ baseURL: process.env.NEXT_PUBLIC_API_URL || '' });
 
 // ==============================|| AXIOS - FOR MOCK SERVICES ||============================== //
 
