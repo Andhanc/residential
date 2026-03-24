@@ -115,13 +115,30 @@ export default function JWTRegister({ ...others }) {
               })
             );
 
+            const redirectTo = authParam ? `/login?auth=${authParam}` : '/login';
+            if (typeof window !== 'undefined') {
+              window.alert('Вы зарегистрированы');
+              window.location.assign(redirectTo);
+              return;
+            }
+
             // Делаем редирект всегда после успешной регистрации
-            router.replace(authParam ? `/login?auth=${authParam}` : '/login');
+            router.replace(redirectTo);
           } catch (err) {
             if (scriptedRef.current) {
+              const status = err?.response?.status;
+              const errorMessage =
+                status === 409
+                  ? 'Пользователь с таким email уже зарегистрирован'
+                  : err?.response?.data?.error || err?.message || 'Ошибка регистрации';
+
               setStatus({ success: false });
-              setErrors({ submit: err.message });
+              setErrors({ submit: errorMessage });
               setSubmitting(false);
+
+              if (typeof window !== 'undefined') {
+                window.alert(errorMessage);
+              }
             }
           }
         }}

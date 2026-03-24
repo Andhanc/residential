@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 import AppBar from 'ui-component/extended/AppBar'
@@ -20,27 +20,34 @@ import FacebookIcon from '@mui/icons-material/Facebook'
 import SendIcon from '@mui/icons-material/Send'
 import RouterLink from 'next/link'
 
-const APARTMENT_CONFIG = {
+const APARTMENT_IMAGES = {
   '2A': {
-    image: '/assets/images/residential/house 9 floor 1.png',
-    area: '81,79 м²',
-    price: '450 172 BYN'
+    image: '/assets/images/residential/house 9 floor 1.png'
   },
   '2B': {
-    image: '/assets/images/residential/house 9 floor 2.png',
-    area: '81,79 м²',
-    price: '450 172 BYN'
+    image: '/assets/images/residential/house 9 floor 2.png'
   },
   '2C': {
-    image: '/assets/images/residential/house 9 floor 3.png',
-    area: '81,79 м²',
-    price: '450 172 BYN'
+    image: '/assets/images/residential/house 9 floor 3.png'
   },
   '2D': {
-    image: '/assets/images/residential/house 9 floor 4.png',
-    area: '81,79 м²',
-    price: '450 172 BYN'
+    image: '/assets/images/residential/house 9 floor 4.png'
   }
+}
+
+const APARTMENT_CODES = ['2A', '2B', '2C', '2D']
+const HOUSE_ID = 9
+
+const formatByn = (value) => {
+  const numberValue = Number(value)
+  if (Number.isNaN(numberValue)) return 'По запросу'
+  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(numberValue)} BYN`
+}
+
+const formatArea = (value) => {
+  const numberValue = Number(value)
+  if (Number.isNaN(numberValue)) return '—'
+  return `${new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(numberValue)} м²`
 }
 
 function ApartmentPage() {
@@ -49,10 +56,63 @@ function ApartmentPage() {
 
   const floor = searchParams.get('floor') || '1'
   const code = searchParams.get('apt') || '2A'
+  const apartmentId = searchParams.get('apartmentId')
+  const [dbApartments, setDbApartments] = useState([])
 
-  const config = APARTMENT_CONFIG[code] || APARTMENT_CONFIG['2A']
+  useEffect(() => {
+    let isMounted = true
 
-  const title = `Квартира ${code}`
+    const loadApartments = async () => {
+      try {
+        const response = await fetch(`/api/apartments?houseId=${HOUSE_ID}`)
+        if (!response.ok) throw new Error('Failed to load apartments')
+        const apartments = await response.json()
+        if (isMounted && Array.isArray(apartments)) {
+          setDbApartments(apartments)
+        }
+      } catch (error) {
+        console.error('Не удалось получить квартиры из БД', error)
+      }
+    }
+
+    loadApartments()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const selectedApartment = useMemo(() => {
+    if (!dbApartments.length) return null
+
+    if (apartmentId) {
+      const byId = dbApartments.find((apartment) => Number(apartment.id) === Number(apartmentId))
+      if (byId) return byId
+    }
+
+    const floorNumber = Number(floor)
+    const codeIndex = APARTMENT_CODES.indexOf(code)
+    if (Number.isNaN(floorNumber) || codeIndex < 0) return null
+
+    const floorApartments = dbApartments
+      .filter((apartment) => Number(apartment?.floor?.number) === floorNumber)
+      .sort((a, b) => String(a.number).localeCompare(String(b.number)))
+
+    return floorApartments[codeIndex] || null
+  }, [apartmentId, code, dbApartments, floor])
+
+  const imageConfig = APARTMENT_IMAGES[code] || APARTMENT_IMAGES['2A']
+  const displayArea = selectedApartment ? formatArea(selectedApartment.area) : '—'
+  const displayPrice = selectedApartment ? formatByn(selectedApartment.price) : 'По запросу'
+  const displayStatus = typeof selectedApartment?.isCommissioned === 'boolean'
+    ? (selectedApartment.isCommissioned ? 'Сдана' : 'В продаже')
+    : 'В продаже'
+  const bynPerSquare = selectedApartment
+    ? Math.round(Number(selectedApartment.price) / Number(selectedApartment.area))
+    : null
+
+  const title = selectedApartment?.number
+    ? `Квартира №${selectedApartment.number}`
+    : `Квартира ${code}`
 
   return (
     <>
@@ -124,7 +184,7 @@ function ApartmentPage() {
                       fontSize: 14
                     }}
                   >
-                    {config.area}
+                    {displayArea}
                   </Box>
                 </Box>
 
@@ -142,7 +202,7 @@ function ApartmentPage() {
                     '&:hover': { bgcolor: '#24964a', boxShadow: 'none' }
                   }}
                 >
-                  В продаже
+                  {displayStatus}
                 </Button>
               </Box>
 
@@ -161,7 +221,7 @@ function ApartmentPage() {
                   >
                     <Box
                       component="img"
-                      src={config.image}
+                      src={imageConfig.image}
                       alt={title}
                       sx={{
                         width: '100%',
@@ -181,7 +241,7 @@ function ApartmentPage() {
                       gap: 2
                     }}
                   >
-                    {[config.image].map((imgSrc, index) => (
+                    {[imageConfig.image].map((imgSrc, index) => (
                       <Box
                         // eslint-disable-next-line react/no-array-index-key
                         key={index}
@@ -225,7 +285,7 @@ function ApartmentPage() {
                       fontSize: { xs: '1.9rem', md: '2.2rem' }
                     }}
                   >
-                    Квартира {code}: {config.area}
+                    {title}: {displayArea}
                   </Typography>
 
                   <Typography
@@ -235,12 +295,18 @@ function ApartmentPage() {
                       mb: 0.5
                     }}
                   >
-                    {config.price}
+                    {displayPrice}
                   </Typography>
 
                   <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 3 }}>
-                    5504 BYN/м²
+                    {bynPerSquare ? `${new Intl.NumberFormat('ru-RU').format(bynPerSquare)} BYN/м²` : '—'}
                   </Typography>
+
+                  {selectedApartment && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {selectedApartment.rooms}-комн. квартира, этаж {floor}
+                    </Typography>
+                  )}
 
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>

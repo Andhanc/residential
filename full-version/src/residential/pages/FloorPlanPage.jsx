@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import AppBar from 'ui-component/extended/AppBar'
 import Building from '../components/Building'
@@ -105,6 +105,21 @@ const APARTMENT4 = {
   ]
 }
 
+const APARTMENT_CODES = ['2A', '2B', '2C', '2D']
+const HOUSE_ID = 9
+
+const formatByn = (value) => {
+  const numberValue = Number(value)
+  if (Number.isNaN(numberValue)) return 'По запросу'
+  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(numberValue)} BYN`
+}
+
+const formatArea = (value) => {
+  const numberValue = Number(value)
+  if (Number.isNaN(numberValue)) return '—'
+  return `${new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(numberValue)} м²`
+}
+
 function FloorPlanPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -119,6 +134,7 @@ function FloorPlanPage() {
   const [selectedBuilding, setSelectedBuilding] = useState('')
   const [selectedRooms, setSelectedRooms] = useState(null)
   const [areaRange, setAreaRange] = useState([34, 82])
+  const [dbApartments, setDbApartments] = useState([])
 
   const handleEntranceChange = (entrance) => {
     setSelectedEntrance(entrance)
@@ -149,6 +165,44 @@ function FloorPlanPage() {
     })
   }
 
+  useEffect(() => {
+    let isMounted = true
+
+    const loadApartments = async () => {
+      try {
+        const response = await fetch(`/api/apartments?houseId=${HOUSE_ID}`)
+        if (!response.ok) throw new Error('Failed to load apartments')
+        const apartments = await response.json()
+
+        if (isMounted && Array.isArray(apartments)) {
+          setDbApartments(apartments)
+        }
+      } catch (error) {
+        console.error('Не удалось получить квартиры из БД', error)
+      }
+    }
+
+    loadApartments()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const floorApartments = useMemo(() => {
+    return dbApartments
+      .filter((apartment) => Number(apartment?.floor?.number) === selectedFloor)
+      .sort((a, b) => String(a.number).localeCompare(String(b.number)))
+      .slice(0, 4)
+  }, [dbApartments, selectedFloor])
+
+  const apartmentSlots = [
+    { layout: APARTMENT1, image: '/assets/images/residential/house 9 floor 1.png', id: 'floor-apartment-1' },
+    { layout: APARTMENT2, image: '/assets/images/residential/house 9 floor 2.png', id: 'floor-apartment-2' },
+    { layout: APARTMENT3, image: '/assets/images/residential/house 9 floor 3.png', id: 'floor-apartment-3' },
+    { layout: APARTMENT4, image: '/assets/images/residential/house 9 floor 4.png', id: 'floor-apartment-4' }
+  ]
+
   // Данные полигонов квартир (без масштабирования, в пикселях исходного макета)
   const apartment1Polygon = APARTMENT1.polygonPoints
     .map(([x, y]) => `${x}px ${y}px`)
@@ -165,6 +219,7 @@ function FloorPlanPage() {
   const apartment4Polygon = APARTMENT4.polygonPoints
     .map(([x, y]) => `${x}px ${y}px`)
     .join(', ')
+  const apartmentPolygons = [apartment1Polygon, apartment2Polygon, apartment3Polygon, apartment4Polygon]
 
   return (
     <>
@@ -298,78 +353,44 @@ function FloorPlanPage() {
               className="floor-plan-image"
             />
 
-            {/* Квартиры на плане (шаблон одинаковый для всех этажей) */}
-            <Building
-              image="/assets/images/residential/house 9 floor 1.png"
-              x={APARTMENT1.x}
-              y={APARTMENT1.y}
-              width={APARTMENT1.width}
-              height={APARTMENT1.height}
-              polygon={apartment1Polygon}
-              zIndex={20}
-              id="floor-apartment-1"
-              onClick={() => router.push(`/apartment?floor=${selectedFloor}&apt=2A`)}
-              buildingData={{
-                name: `Этаж ${selectedFloor} квартира 2A`,
-                status: 'В продаже',
-                apartments: '',
-                price: 'По запросу'
-              }}
-            />
+            {/* Квартиры на плане (данные подтягиваются из БД) */}
+            {apartmentSlots.map((slot, index) => {
+              const dbApartment = floorApartments[index]
+              const apartmentCode = APARTMENT_CODES[index]
+              const rooms = dbApartment?.rooms
+              const area = dbApartment?.area
+              const isCommissioned = dbApartment?.isCommissioned
+              const statusLabel = typeof isCommissioned === 'boolean'
+                ? (isCommissioned ? 'Сдана' : 'В продаже')
+                : 'В продаже'
 
-            <Building
-              image="/assets/images/residential/house 9 floor 2.png"
-              x={APARTMENT2.x}
-              y={APARTMENT2.y}
-              width={APARTMENT2.width}
-              height={APARTMENT2.height}
-              polygon={apartment2Polygon}
-              zIndex={20}
-              id="floor-apartment-2"
-              onClick={() => router.push(`/apartment?floor=${selectedFloor}&apt=2B`)}
-              buildingData={{
-                name: `Этаж ${selectedFloor} квартира 2B`,
-                status: 'В продаже',
-                apartments: '',
-                price: 'По запросу'
-              }}
-            />
-
-            <Building
-              image="/assets/images/residential/house 9 floor 3.png"
-              x={APARTMENT3.x}
-              y={APARTMENT3.y}
-              width={APARTMENT3.width}
-              height={APARTMENT3.height}
-              polygon={apartment3Polygon}
-              zIndex={20}
-              id="floor-apartment-3"
-              onClick={() => router.push(`/apartment?floor=${selectedFloor}&apt=2C`)}
-              buildingData={{
-                name: `Этаж ${selectedFloor} квартира 2C`,
-                status: 'В продаже',
-                apartments: '',
-                price: 'По запросу'
-              }}
-            />
-
-            <Building
-              image="/assets/images/residential/house 9 floor 4.png"
-              x={APARTMENT4.x}
-              y={APARTMENT4.y}
-              width={APARTMENT4.width}
-              height={APARTMENT4.height}
-              polygon={apartment4Polygon}
-              zIndex={20}
-              id="floor-apartment-4"
-              onClick={() => router.push(`/apartment?floor=${selectedFloor}&apt=2D`)}
-              buildingData={{
-                name: `Этаж ${selectedFloor} квартира 2D`,
-                status: 'В продаже',
-                apartments: '',
-                price: 'По запросу'
-              }}
-            />
+              return (
+                <Building
+                  key={slot.id}
+                  image={slot.image}
+                  x={slot.layout.x}
+                  y={slot.layout.y}
+                  width={slot.layout.width}
+                  height={slot.layout.height}
+                  polygon={apartmentPolygons[index]}
+                  zIndex={20}
+                  id={slot.id}
+                  onClick={() => router.push(
+                    `/apartment?floor=${selectedFloor}&apt=${apartmentCode}${dbApartment?.id ? `&apartmentId=${dbApartment.id}` : ''}`
+                  )}
+                  buildingData={{
+                    name: dbApartment
+                      ? `Этаж ${selectedFloor} квартира №${dbApartment.number}`
+                      : `Этаж ${selectedFloor} квартира ${apartmentCode}`,
+                    status: statusLabel,
+                    apartments: dbApartment
+                      ? `${rooms}-комн. · ${formatArea(area)}`
+                      : '',
+                    price: dbApartment ? formatByn(dbApartment.price) : 'По запросу'
+                  }}
+                />
+              )
+            })}
 
           </Box>
 
