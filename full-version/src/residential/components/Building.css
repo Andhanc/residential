@@ -38,6 +38,11 @@
   background-color: rgba(244, 67, 54, 0.5);
 }
 
+/* Красный ховер для забронированных квартир */
+.building-reserved:hover::before {
+  background-color: rgba(244, 67, 54, 0.5);
+}
+
 /* Ховер для всех домов */
 .building:hover {
   z-index: 100;

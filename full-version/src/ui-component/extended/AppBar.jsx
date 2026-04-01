@@ -81,7 +81,7 @@ export default function AppBar({ ...others }) {
               sx={{ display: { xs: 'none', sm: 'block' }, ml: 'auto' }}
               spacing={{ xs: 1.5, md: 2.5 }}
             >
-              <Button color="inherit" component={Link} href="#">
+              <Button color="inherit" component={RouterLink} href="/">
                 Главная
               </Button>
               <Button color="inherit" component={RouterLink} href="/login" target="_blank">
@@ -108,12 +108,12 @@ export default function AppBar({ ...others }) {
                 {drawerToggle && (
                   <Box sx={{ width: 'auto' }} role="presentation" onClick={drawerToggler(false)} onKeyDown={drawerToggler(false)}>
                     <List>
-                      <Link sx={{ textDecoration: 'none' }} href="#" target="_blank">
+                      <Link component={RouterLink} sx={{ textDecoration: 'none' }} href="/">
                         <ListItemButton>
                           <ListItemIcon>
                             <IconHome2 />
                           </ListItemIcon>
-                          <ListItemText primary="Home" />
+                          <ListItemText primary="Главная" />
                         </ListItemButton>
                       </Link>
                       <Link sx={{ textDecoration: 'none' }} href="/login" target="_blank">

@@ -360,6 +360,7 @@ function FloorPlanPage() {
               const rooms = dbApartment?.rooms
               const area = dbApartment?.area
               const isCommissioned = dbApartment?.isCommissioned
+              const isReserved = Boolean(dbApartment?.isReserved)
               const statusLabel = typeof isCommissioned === 'boolean'
                 ? (isCommissioned ? 'Сдана' : 'В продаже')
                 : 'В продаже'
@@ -382,11 +383,12 @@ function FloorPlanPage() {
                     name: dbApartment
                       ? `Этаж ${selectedFloor} квартира №${dbApartment.number}`
                       : `Этаж ${selectedFloor} квартира ${apartmentCode}`,
-                    status: statusLabel,
+                    status: isReserved ? 'Забронирована' : statusLabel,
                     apartments: dbApartment
                       ? `${rooms}-комн. · ${formatArea(area)}`
                       : '',
-                    price: dbApartment ? formatByn(dbApartment.price) : 'По запросу'
+                    price: dbApartment ? formatByn(dbApartment.price) : 'По запросу',
+                    isReserved
                   }}
                 />
               )

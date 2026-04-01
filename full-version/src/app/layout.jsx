@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 
 import './../scss/style.scss';
+import './globals.css';
 
 // project imports
 import ProviderWrapper from 'store/ProviderWrapper';

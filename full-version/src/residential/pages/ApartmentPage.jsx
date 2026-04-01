@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 import AppBar from 'ui-component/extended/AppBar'
@@ -10,11 +10,17 @@ import Container from '@mui/material/Container'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import CircularProgress from '@mui/material/CircularProgress'
+import { MultiStepForm } from '@/components/ui/multistep-form'
 import Breadcrumbs from '@mui/material/Breadcrumbs'
 import Link from '@mui/material/Link'
 import TextField from '@mui/material/TextField'
 import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel'
+import Switch from '@mui/material/Switch'
+import Tooltip from '@mui/material/Tooltip'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import FacebookIcon from '@mui/icons-material/Facebook'
 import SendIcon from '@mui/icons-material/Send'
@@ -58,6 +64,9 @@ function ApartmentPage() {
   const code = searchParams.get('apt') || '2A'
   const apartmentId = searchParams.get('apartmentId')
   const [dbApartments, setDbApartments] = useState([])
+  const [isConsultationOpen, setIsConsultationOpen] = useState(false)
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false)
+  const [withReservation, setWithReservation] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -110,9 +119,16 @@ function ApartmentPage() {
     ? Math.round(Number(selectedApartment.price) / Number(selectedApartment.area))
     : null
 
+  const openConsultation = () => setIsConsultationOpen(true)
+  const closeConsultation = () => {
+    if (!isSubmittingRequest) setIsConsultationOpen(false)
+  }
+
   const title = selectedApartment?.number
     ? `Квартира №${selectedApartment.number}`
     : `Квартира ${code}`
+
+  const isApartmentReserved = Boolean(selectedApartment?.isReserved)
 
   return (
     <>
@@ -141,7 +157,6 @@ function ApartmentPage() {
               <Typography color="text.primary">{title}</Typography>
             </Breadcrumbs>
 
-            {/* Основной блок как большая "страница квартиры" */}
             <Box
               sx={{
                 mt: 4,
@@ -152,7 +167,6 @@ function ApartmentPage() {
                 py: { xs: 3, md: 4 }
               }}
             >
-              {/* Верхняя строка с этажом, площадью и статусом */}
               <Box
                 sx={{
                   display: 'flex',
@@ -206,8 +220,42 @@ function ApartmentPage() {
                 </Button>
               </Box>
 
+              {selectedApartment && (
+                <Box
+                  sx={{
+                    mb: { xs: 2.5, md: 3 },
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end'
+                  }}
+                >
+                  <Tooltip title="Включите, чтобы добавить шаг выбора даты и времени встречи.">
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <FormControlLabel
+                        sx={{ mr: 0 }}
+                        labelPlacement="start"
+                        label={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+                              Бронирование
+                            </Typography>
+                          </Box>
+                        }
+                        control={
+                          <Switch
+                            checked={withReservation}
+                            onChange={(e) => setWithReservation(e.target.checked)}
+                            disabled={isSubmittingRequest}
+                            color="secondary"
+                          />
+                        }
+                      />
+                    </Box>
+                  </Tooltip>
+                </Box>
+              )}
+
               <Grid container spacing={6} alignItems="flex-start">
-                {/* Левая часть - большой план квартиры + превью */}
                 <Grid item xs={12} md={6.5}>
                   <Box
                     sx={{
@@ -233,7 +281,6 @@ function ApartmentPage() {
                     />
                   </Box>
 
-                  {/* Небольшие превью планировок под основным изображением */}
                   <Box
                     sx={{
                       mt: 2.5,
@@ -243,8 +290,7 @@ function ApartmentPage() {
                   >
                     {[imageConfig.image].map((imgSrc, index) => (
                       <Box
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={index}
+                        key={imgSrc}
                         sx={{
                           flex: '0 0 110px',
                           height: 90,
@@ -274,7 +320,6 @@ function ApartmentPage() {
                   </Box>
                 </Grid>
 
-                {/* Правая часть - информация о квартире */}
                 <Grid item xs={12} md={5.5}>
                   <Typography
                     variant="h3"
@@ -331,11 +376,12 @@ function ApartmentPage() {
                 </Grid>
               </Grid>
 
-              {/* Кнопка записи внизу карточки */}
               <Box sx={{ mt: 5, textAlign: 'center' }}>
                 <Button
                   variant="contained"
                   color="secondary"
+                  onClick={openConsultation}
+                  disabled={isApartmentReserved}
                   sx={{
                     textTransform: 'none',
                     borderRadius: 999,
@@ -346,6 +392,11 @@ function ApartmentPage() {
                 >
                   Записаться на консультацию
                 </Button>
+                {isApartmentReserved && (
+                  <Typography variant="body2" color="error" sx={{ mt: 1.5 }}>
+                    Квартира уже забронирована — отправка заявки недоступна.
+                  </Typography>
+                )}
                 <Button
                   variant="text"
                   sx={{ textTransform: 'none', ml: 3 }}
@@ -358,7 +409,87 @@ function ApartmentPage() {
           </Box>
         </Container>
 
-      {/* Блок "Помочь с выбором?" на всю ширину */}
+        <Dialog
+          open={isConsultationOpen}
+          onClose={closeConsultation}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              borderRadius: 6,
+              overflow: 'hidden',
+              p: { xs: 2, sm: 4 }
+            }
+          }}
+        >
+          <DialogContent sx={{ p: 0 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 1 }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  mb: 3,
+                  mt: { xs: 1, sm: 0 }
+                }}
+              >
+                Оставьте свои данные и мы свяжемся с вами
+              </Typography>
+              <MultiStepForm
+                key={withReservation ? 'with-reservation' : 'no-reservation'}
+                onComplete={async (values) => {
+                  const apartmentIdToSend = selectedApartment?.id ? Number(selectedApartment.id) : Number(apartmentId)
+                  if (!apartmentIdToSend || Number.isNaN(apartmentIdToSend)) {
+                    window.alert('Не удалось определить квартиру для бронирования.')
+                    return
+                  }
+
+                  try {
+                    setIsSubmittingRequest(true)
+                    const res = await fetch('/api/purchase-requests', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        apartmentId: apartmentIdToSend,
+                        fullName: values.fullName,
+                        phone: values.phone,
+                        email: values.email,
+                        isReservation: withReservation,
+                        meetingAt: withReservation ? values.meetingAt : undefined
+                      })
+                    })
+
+                    const data = await res.json().catch(() => ({}))
+                    if (!res.ok) {
+                      window.alert(data?.error || 'Не удалось отправить заявку.')
+                      return
+                    }
+
+                    window.alert('Заявка отправлена. Мы свяжемся с вами в ближайшее время.')
+                    setIsConsultationOpen(false)
+                  } catch (error) {
+                    console.error('Failed to submit purchase request', error)
+                    window.alert('Не удалось отправить заявку. Попробуйте позже.')
+                  } finally {
+                    setIsSubmittingRequest(false)
+                  }
+                }}
+                includeReservationStep={withReservation}
+                apartmentId={selectedApartment?.id ? Number(selectedApartment.id) : Number(apartmentId)}
+              />
+
+              {isSubmittingRequest && (
+                <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
+                  <CircularProgress size={18} />
+                  <Typography variant="body2" color="text.secondary">
+                    Отправляем заявку…
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </DialogContent>
+        </Dialog>
+
       <Box
         sx={{
           bgcolor: '#f5f0ff',
@@ -392,7 +523,6 @@ function ApartmentPage() {
                   gap: { xs: 3, md: 4 }
                 }}
               >
-                {/* Левая карточка с контактами офиса продаж */}
                 <Box
                   sx={{
                     flex: 1,
@@ -454,7 +584,6 @@ function ApartmentPage() {
                     способом.
                   </Typography>
 
-                  {/* Соцсети снизу карточки */}
                   <Box
                     sx={{
                       mt: 4,
@@ -468,7 +597,6 @@ function ApartmentPage() {
                   </Box>
                 </Box>
 
-                {/* Правая карточка с формой */}
                 <Box
                   sx={{
                     flex: 1,
@@ -510,7 +638,6 @@ function ApartmentPage() {
                       />
                     </Grid>
 
-                    {/* Кнопка отправки на месте поля комментария */}
                     <Grid item xs={12}>
                       <Button
                         variant="contained"
@@ -564,7 +691,6 @@ function ApartmentPage() {
           </Container>
         </Box>
 
-        {/* Информационный футер страницы квартиры */}
         <Box
           component="footer"
           sx={{

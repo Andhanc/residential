@@ -47,6 +47,8 @@
     "@mui/x-tree-view": "8.1.0",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
     "@reduxjs/toolkit": "2.7.0",
     "@supabase/supabase-js": "2.49.4",
     "@tabler/icons-react": "3.31.0",
@@ -55,6 +57,8 @@
     "axios": "1.8.4",
     "bcryptjs": "^3.0.3",
     "chance": "1.1.12",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "copy-to-clipboard": "3.3.3",
     "currency.js": "2.0.4",
     "date-fns": "4.1.0",
@@ -65,6 +69,7 @@
     "jsonwebtoken": "^9.0.3",
     "jwt-decode": "4.0.0",
     "lodash-es": "4.17.21",
+    "lucide-react": "^1.7.0",
     "mapbox-gl": "3.11.1",
     "material-ui-popup-state": "5.3.5",
     "next": "15.3.1",
@@ -98,12 +103,15 @@
     "slick-carousel": "1.8.1",
     "stylis-plugin-rtl": "2.1.1",
     "swr": "2.3.3",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss-animate": "^1.0.7",
     "yet-another-react-lightbox": "3.23.0",
     "yup": "1.6.1"
   },
   "devDependencies": {
     "@eslint/compat": "1.2.8",
     "@eslint/eslintrc": "3.3.1",
+    "autoprefixer": "^10.4.27",
     "dotenv": "^17.3.1",
     "eslint": "9.25.1",
     "eslint-config-next": "15.3.1",
@@ -113,9 +121,11 @@
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
     "knip": "5.51.1",
+    "postcss": "^8.5.8",
     "prettier": "3.5.3",
     "prisma": "^7.4.2",
-    "sass": "1.87.0"
+    "sass": "1.87.0",
+    "tailwindcss": "^3.4.19"
   },
   "packageManager": "yarn@4.9.1"
 }

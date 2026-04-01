@@ -65,10 +65,12 @@ function Building({ image, x, y, width, height, polygon, id, onClick, zIndex, bu
 
   // Определяем класс в зависимости от статуса
   const isSold = buildingData?.status === 'Продан'
+  const isReserved = Boolean(buildingData?.isReserved) || buildingData?.status === 'Забронирована'
   const buildingClasses = [
     'building',
     id === 'building-4' ? 'building-expanded-hover' : '',
-    isSold ? 'building-sold' : ''
+    isSold ? 'building-sold' : '',
+    isReserved ? 'building-reserved' : ''
   ].filter(Boolean).join(' ')
 
   return (

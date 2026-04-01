@@ -12,6 +12,7 @@ import CardSection from './CardSection';
 import FeatureSection from './FeatureSection';
 import PeopleSection from './PeopleSection';
 import FrameworkSection from './FrameworkSection';
+import PurchaseRequestSection from './PurchaseRequestSection';
 import FooterSection from './FooterSection';
 import CustomizeSection from './CustomizeSection';
 import PreBuildDashBoard from './PreBuildDashBoard';
@@ -83,6 +84,9 @@ export default function Landing() {
       <Box sx={{ py: 12.5, bgcolor: theme.palette.mode === ThemeMode.DARK ? 'dark.dark' : 'background.default' }}>
         <FrameworkSection />
       </Box>
+
+      {/* purchase request section */}
+      <PurchaseRequestSection />
 
       {/* 7. inculde section */}
       {/* <Box sx={{ py: 12.5, bgcolor: theme.palette.mode === ThemeMode.DARK ? 'dark.dark' : 'background.default' }}>
