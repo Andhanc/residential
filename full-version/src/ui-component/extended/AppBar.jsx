@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { cloneElement, useState } from 'react';
 import RouterLink from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -53,12 +54,19 @@ function ElevationScroll({ children, window }) {
 
 export default function AppBar({ ...others }) {
   const [drawerToggle, setDrawerToggle] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
 
   const drawerToggler = (open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
     setDrawerToggle(open);
+  };
+
+  const scrollToFooter = () => {
+    const el = document.getElementById('footer');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
@@ -84,7 +92,16 @@ export default function AppBar({ ...others }) {
               <Button color="inherit" component={RouterLink} href="/">
                 Главная
               </Button>
-              <Button color="inherit" component={RouterLink} href="/login" target="_blank">
+              <Button
+                color="inherit"
+                onClick={() => {
+                  if (pathname === '/') {
+                    scrollToFooter();
+                    return;
+                  }
+                  router.push('/#footer');
+                }}
+              >
                 Контакты
               </Button>
               <Button color="inherit" component={Link} href="https://codedthemes.gitbook.io/berry" target="_blank">

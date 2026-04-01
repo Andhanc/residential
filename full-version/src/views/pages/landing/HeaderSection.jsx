@@ -140,7 +140,14 @@ export default function HeaderSection() {
                     </AnimateButton>
                   </Grid>
                   <Grid>
-                    <Button component={Link} href="https://links.codedthemes.com/hsqll" target="_blank" size="large">
+                    <Button
+                      size="large"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const el = document.getElementById('purchase-request');
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                    >
                       Оставить заявку
                     </Button>
                   </Grid>

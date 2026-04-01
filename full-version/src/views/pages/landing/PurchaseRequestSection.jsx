@@ -17,6 +17,7 @@ export default function PurchaseRequestSection() {
 
   return (
     <Box
+      id="purchase-request"
       sx={{
         py: 12.5,
         bgcolor: theme.palette.mode === ThemeMode.DARK ? 'background.default' : 'grey.100'

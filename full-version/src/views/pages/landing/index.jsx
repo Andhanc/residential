@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -26,6 +28,13 @@ import { ThemeMode } from 'config';
 
 export default function Landing() {
   const theme = useTheme();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.hash !== '#footer') return;
+    const el = document.getElementById('footer');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   return (
     <>
@@ -94,7 +103,10 @@ export default function Landing() {
           </Box> */}
 
       {/* footer section */}
-      <Box sx={{ py: 12.5, bgcolor: theme.palette.mode === ThemeMode.DARK ? 'background.default' : 'dark.900', pb: 0 }}>
+      <Box
+        id="footer"
+        sx={{ py: 12.5, bgcolor: theme.palette.mode === ThemeMode.DARK ? 'background.default' : 'dark.900', pb: 0 }}
+      >
         <FooterSection />
       </Box>
       <Customization />
